@@ -3,3 +3,6 @@
 
 # macOS stuff
 .DS_store
+
+# virtual environment
+venv/
