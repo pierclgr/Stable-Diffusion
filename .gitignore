@@ -9,3 +9,6 @@ venv/
 
 # pretrained weights
 weights/
+
+# tokenizer
+tokenizer/
