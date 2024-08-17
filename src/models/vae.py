@@ -70,7 +70,7 @@ class VAEEncoder(nn.Sequential):
         # x = (batch_size, 3, height, width)
         # noise = (batch_size, out_channels, height/8, width/8)
 
-        for layer in self.layers:
+        for layer in self:
             if getattr(layer, "stride", None) == (2, 2):
                 # for layers with stride 2, apply asymmetrical padding only on right and bottom
                 x = F.pad(x, (0, 1, 0, 1))
@@ -201,7 +201,7 @@ class VAEDecoder(nn.Sequential):
         # x = (batch_size, 4, height/8, width/8)
         x /= 0.18215
 
-        for layer in self.layers:
+        for layer in self:
             x = layer(x)
 
         return x
