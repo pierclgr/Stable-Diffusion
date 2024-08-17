@@ -4,11 +4,9 @@ import torch.nn.functional as F
 from src.models.attention import SelfAttention
 
 
-class VAEEncoder(nn.Module):
+class VAEEncoder(nn.Sequential):
     def __init__(self) -> None:
-        super().__init__()
-
-        self.layers = [
+        super().__init__(
             # (batch_size, 3, height, width)
             nn.Conv2d(in_channels=3, out_channels=128, kernel_size=3, padding=1),
 
@@ -49,7 +47,7 @@ class VAEEncoder(nn.Module):
             VAEResidualBlock(in_channels=512, out_channels=512),
 
             # (batch_size, 512, height/8, width/8)
-            VAEAttentionBlock(out_channels=512),
+            VAEAttentionBlock(channels=512),
 
             # (batch_size, 512, height/8, width/8)
             VAEResidualBlock(in_channels=512, out_channels=512),
@@ -65,7 +63,7 @@ class VAEEncoder(nn.Module):
 
             # (batch_size, 8, height/8, width/8)
             nn.Conv2d(in_channels=8, out_channels=8, kernel_size=1, padding=0),
-        ]
+        )
         # (batch_size, 8, height/8, width/8)
 
     def forward(self, x: torch.Tensor, noise: torch.Tensor) -> torch.Tensor:
@@ -105,10 +103,10 @@ class VAEEncoder(nn.Module):
 class VAEResidualBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-
-        self.residual = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, padding=0)
+        if in_channels == out_channels:
+            self.residual = nn.Identity()
+        else:
+            self.residual = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, padding=0)
 
         # define decoder layers
         self.groupnorm1 = nn.GroupNorm(num_groups=32, num_channels=in_channels)
@@ -133,8 +131,7 @@ class VAEResidualBlock(nn.Module):
         x = self.silu(x)
         x = self.conv2(x)
 
-        if self.in_channels != self.out_channels:
-            residual = self.residual(residual)
+        residual = self.residual(residual)
 
         x += residual
         return x
@@ -169,10 +166,9 @@ class VAEAttentionBlock(nn.Module):
         return x
 
 
-class VAEDecoder(nn.Module):
+class VAEDecoder(nn.Sequential):
     def __init__(self) -> None:
-        super().__init__()
-        self.layers = [
+        super().__init__(
             nn.Conv2d(4, 4, kernel_size=1, padding=0),
             nn.Conv2d(4, 512, kernel_size=3, padding=1),
             VAEResidualBlock(512, 512),
@@ -199,7 +195,7 @@ class VAEDecoder(nn.Module):
             nn.GroupNorm(32, 128),
             nn.SiLU(),
             nn.Conv2d(128, 3, kernel_size=3, padding=1)
-        ]
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x = (batch_size, 4, height/8, width/8)

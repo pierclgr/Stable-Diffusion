@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from attention import SelfAttention
+from src.models.attention import SelfAttention
 
 
 class CLIP(nn.Module):
@@ -8,7 +8,7 @@ class CLIP(nn.Module):
         super().__init__()
         self.embedding = CLIPEmbedding(voc_size=49408, embedding_dim=768, max_seq_len=77)
 
-        self.layers = [CLIPLayer(n_attention_heads=12, embedding_dim=768) for _ in range(12)]
+        self.layers = nn.ModuleList([CLIPLayer(n_attention_heads=12, embedding_dim=768) for _ in range(12)])
 
         self.layernorm = nn.LayerNorm(normalized_shape=768)
 

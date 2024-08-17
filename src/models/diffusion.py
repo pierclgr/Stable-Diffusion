@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from unet import UNet, UNetOutputLayer
+from src.models.unet import UNet, UNetOutputLayer
 
 
 class Diffusion(nn.Module):
