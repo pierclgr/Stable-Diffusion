@@ -147,10 +147,12 @@ class VAEAttentionBlock(nn.Module):
         # x = (batch_size, features, height, width)
         residual = x
 
+        x = self.groupnorm1(x)
+
         batch_size, features, height, width = x.shape
 
         # (batch_size, features, height, width)
-        x = self.view(batch_size, features, height * width)
+        x = x.view(batch_size, features, height * width)
         # (batch_size, features, height * width)
         x = x.transpose(-1, -2)
         # (batch_size, height * width, features)
@@ -158,7 +160,7 @@ class VAEAttentionBlock(nn.Module):
         # (batch_size, height * width, features)
         x = x.transpose(-1, -2)
         # (batch_size, features, height * width)
-        x = x.vies(batch_size, features, height, width)
+        x = x.view(batch_size, features, height, width)
         # (batch_size, features, height, width)
 
         x += residual
